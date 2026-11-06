@@ -1,0 +1,133 @@
+---
+/**
+ * One page per project. getStaticPaths runs at build time and tells Astro
+ * which URLs to generate: /projects/<file-name>/ for every Markdown file.
+ */
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { getProjects, type Project } from '../../lib/projects';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project, i) => ({
+    params: { slug: project.id },
+    props: { project, next: projects[(i + 1) % projects.length] },
+  }));
+}
+
+interface Props {
+  project: Project;
+  next: Project;
+}
+
+const { project, next } = Astro.props;
+const { title, summary, tech, status, context, date, repo, demo } = project.data;
+const { Content } = await render(project);
+---
+
+<BaseLayout title={title} description={summary}>
+  <article class="container project">
+    <a class="back" href={url('#projects')}>◀ Back to quest log</a>
+
+    <header class="project-header pixel-box">
+      <div class="animate-in">
+        <span class="section-label">Quest</span>
+        <h1>{title}</h1>
+        <p class="summary">{summary}</p>
+
+        <dl class="facts">
+          {context && (<div><dt>Type</dt><dd>{context}</dd></div>)}
+          {date && (<div><dt>When</dt><dd>{date}</dd></div>)}
+          {status && (<div><dt>Status</dt><dd class="status">{status}</dd></div>)}
+        </dl>
+
+        <ul class="tags" aria-label="Technologies used">
+          {tech.map((t) => <li class="tag">{t}</li>)}
+        </ul>
+
+        {(repo || demo) && (
+          <div class="btn-row actions">
+            {repo && (
+              <a class="btn btn-primary" href={repo} rel="noopener noreferrer" target="_blank">
+                <Icon name="github" /> View source<span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
+            )}
+            {demo && (
+              <a class="btn btn-secondary" href={demo} rel="noopener noreferrer" target="_blank">
+                <Icon name="external" /> Live demo<span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {next.id !== project.id && (
+      <nav class="next pixel-box" aria-label="Next project">
+        <span class="label">Next quest</span>
+        <a href={url(`projects/${next.id}/`)}>{next.data.title} ▶</a>
+      </nav>
+    )}
+  </article>
+</BaseLayout>
+
+<style>
+  .project { padding-block: 2rem var(--section-gap); }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--font-ui);
+    font-size: 1.35rem;
+    text-decoration: none;
+    color: var(--text-muted);
+  }
+  .back:hover { color: var(--accent); }
+
+  .project-header {
+    max-width: 52rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    margin-block: 1rem 3rem;
+  }
+  h1 { font-size: clamp(1.2rem, 4vw, 1.9rem); }
+  .summary { font-size: 1.15rem; color: var(--text-muted); }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+    margin: 1.5rem 0;
+  }
+  .facts dt {
+    font-family: var(--font-pixel);
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+  }
+  .facts dd { margin: 0; font-family: var(--font-ui); font-size: 1.35rem; line-height: 1.2; }
+  .facts .status { color: var(--accent); }
+  .actions { margin-top: 1.75rem; }
+
+  .next {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 4rem;
+    padding: 1.4rem 1.6rem;
+    max-width: var(--prose-width);
+  }
+  .label { font-family: var(--font-ui); font-size: 1.25rem; color: var(--text-muted); text-transform: uppercase; }
+  .next a {
+    font-family: var(--font-pixel);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    text-decoration: none;
+  }
+</style>

@@ -1,0 +1,47 @@
+---
+import { site } from '../data/site';
+import { url } from '../lib/url';
+import Icon from './Icon.astro';
+
+// A mailto link instead of a form: no backend, no spam handling, nothing to break.
+// README → "Adding a contact form" explains how to add one later if you want.
+---
+
+<section id="contact" class="section container" aria-labelledby="contact-title">
+  <div class="panel pixel-box reveal">
+    <span class="section-label">Save point</span>
+    <h2 id="contact-title">Let's talk</h2>
+    <p class="message">{site.contact.message}</p>
+
+    <div class="btn-row">
+      <a class="btn btn-primary" href={`mailto:${site.contact.email}`}>
+        <Icon name="mail" /> Email me
+      </a>
+      <a class="btn btn-secondary" href={site.contact.linkedin} rel="noopener noreferrer" target="_blank">
+        <Icon name="linkedin" /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span>
+      </a>
+      <a class="btn btn-secondary" href={site.contact.github} rel="noopener noreferrer" target="_blank">
+        <Icon name="github" /> GitHub<span class="visually-hidden"> (opens in a new tab)</span>
+      </a>
+      <a class="btn btn-secondary" href={url(site.resume)} download>
+        <Icon name="download" /> Resume
+      </a>
+    </div>
+
+    <p class="email">
+      Or copy my address: <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .panel { padding: clamp(1.5rem, 5vw, 3rem); }
+  .message { max-width: 38rem; color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem; }
+  .email {
+    margin: 1.75rem 0 0;
+    font-family: var(--font-ui);
+    font-size: 1.3rem;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+</style>

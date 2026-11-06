@@ -1,0 +1,29 @@
+---
+import { site } from '../data/site';
+---
+
+<section id="skills" class="section container" aria-labelledby="skills-title">
+  <span class="section-label">Inventory</span>
+  <h2 id="skills-title">Technical skills</h2>
+
+  <div class="grid">
+    {site.skills.map((group, i) => (
+      <div class="group pixel-box reveal" style={`--i: ${i % 3}`}>
+        <h3>{group.category}</h3>
+        <ul class="tags">
+          {group.items.map((item) => <li class="tag">{item}</li>)}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  }
+  .group { padding: 1.4rem 1.4rem 1.5rem; }
+  h3 { color: var(--accent); margin-bottom: 1rem; }
+</style>

@@ -1,0 +1,141 @@
+---
+import { site } from '../data/site';
+import { url } from '../lib/url';
+import Icon from './Icon.astro';
+import PixelSprite from './PixelSprite.astro';
+---
+
+<section class="hero container" aria-labelledby="hero-title">
+  <div class="hero-text animate-in">
+    {site.availability && (
+      <p class="badge"><span class="dot blink" aria-hidden="true"></span>{site.availability}</p>
+    )}
+    <p class="section-label">{site.headline}</p>
+    <h1 id="hero-title">Hi, I'm {site.name}<span class="caret blink" aria-hidden="true">_</span></h1>
+
+    <div class="dialog pixel-box">
+      <p class="intro">{site.intro}</p>
+      <span class="next blink" aria-hidden="true">▼</span>
+    </div>
+
+    <div class="btn-row">
+      <a class="btn btn-primary" href={url('#projects')}>
+        View projects <Icon name="arrow-right" />
+      </a>
+      <a class="btn btn-secondary" href={url(site.resume)} download>
+        <Icon name="download" /> Resume
+      </a>
+    </div>
+
+    <ul class="links" aria-label="Profiles">
+      <li>
+        <a href={site.contact.github} rel="noopener noreferrer" target="_blank">
+          <Icon name="github" size={18} /> GitHub<span class="visually-hidden"> (opens in a new tab)</span>
+        </a>
+      </li>
+      <li>
+        <a href={site.contact.linkedin} rel="noopener noreferrer" target="_blank">
+          <Icon name="linkedin" size={18} /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span>
+        </a>
+      </li>
+      <li>
+        <a href={`mailto:${site.contact.email}`}>
+          <Icon name="mail" size={18} /> {site.contact.email}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="hero-art" aria-hidden="true">
+    <PixelSprite scale={6} />
+    <div class="shadow"></div>
+    <p class="plate">Player 1</p>
+    <p class="status">Status: needs coffee</p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+    padding-top: clamp(3rem, 10vw, 6.5rem);
+  }
+  @media (min-width: 56rem) {
+    .hero { grid-template-columns: minmax(0, 1fr) auto; gap: 4rem; }
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-ui);
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 0.4rem 0.7rem;
+    border: 2px solid var(--frame-soft);
+    background: var(--surface);
+    margin-bottom: 1.5rem;
+  }
+  .dot { width: 10px; height: 10px; background: #3fbf6a; box-shadow: 0 0 0 2px var(--frame); }
+
+  h1 { max-width: 18ch; }
+  .caret { color: var(--accent); margin-left: 0.15em; }
+
+  .dialog {
+    max-width: 40rem;
+    padding: 1.4rem 1.6rem 1.6rem;
+    margin-bottom: 2.25rem;
+  }
+  .intro { margin: 0; font-size: clamp(1.05rem, 2.1vw, 1.2rem); }
+  .next {
+    position: absolute;
+    right: 1rem;
+    bottom: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 1.75rem 0 0;
+  }
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    font-family: var(--font-ui);
+    font-size: 1.3rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .links a:hover { color: var(--accent); }
+
+  .hero-art {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  @media (min-width: 56rem) { .hero-art { display: flex; } }
+  .shadow { width: 130px; height: 8px; margin-top: -6px; background: var(--hard-shadow); opacity: 0.25; }
+  .status {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: 1.2rem;
+    color: var(--accent);
+  }
+  .plate {
+    margin: 0.6rem 0 0;
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+</style>

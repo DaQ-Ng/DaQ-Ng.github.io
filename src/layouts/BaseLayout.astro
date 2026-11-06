@@ -1,0 +1,84 @@
+---
+/**
+ * The page shell used by every page: <head> metadata, skip link, header, main, footer.
+ */
+// Pixel fonts, self-hosted (bundled into the build, no Google Fonts request). Latin subset only.
+import '@fontsource/press-start-2p/latin-400.css';
+import '@fontsource/vt323/latin-400.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+import { url } from '../lib/url';
+
+interface Props {
+  /** Page-specific title; the site name is appended automatically. */
+  title?: string;
+  description?: string;
+}
+
+const { title, description = site.description } = Astro.props;
+const fullTitle = title ? `${title} | ${site.name}` : `${site.name} — ${site.headline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <meta name="theme-color" content="#f1e6cc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1124" media="(prefers-color-scheme: dark)" />
+
+    <!-- Social previews (LinkedIn, Slack, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Runs before the page paints: opts in to scroll-reveal only when the browser supports it
+         and the visitor hasn't asked for reduced motion. Without this class nothing is hidden. -->
+    <script is:inline>
+      if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('js-reveal');
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Scroll reveal: adds .is-visible to each .reveal element the first time it scrolls into view.
+      // Astro bundles this into a small module script.
+      const root = document.documentElement;
+      if (root.classList.contains('js-reveal')) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.1 },
+        );
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  main:focus { outline: none; }
+</style>

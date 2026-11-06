@@ -1,0 +1,59 @@
+---
+import { site } from '../data/site';
+import Icon from './Icon.astro';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container inner">
+    <div>
+      <p class="thanks">Thanks for visiting!</p>
+      <p class="muted copy">© {year} {site.name} · Built with Astro</p>
+    </div>
+    <ul class="social" aria-label="Social links">
+      <li>
+        <a href={site.contact.github} rel="noopener noreferrer" target="_blank" aria-label="GitHub (opens in a new tab)">
+          <Icon name="github" size={22} />
+        </a>
+      </li>
+      <li>
+        <a href={site.contact.linkedin} rel="noopener noreferrer" target="_blank" aria-label="LinkedIn (opens in a new tab)">
+          <Icon name="linkedin" size={22} />
+        </a>
+      </li>
+      <li>
+        <a href={`mailto:${site.contact.email}`} aria-label={`Email ${site.contact.email}`}>
+          <Icon name="mail" size={22} />
+        </a>
+      </li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer { border-top: 4px solid var(--frame); background: var(--bg); }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.75rem;
+  }
+  p { margin: 0; }
+  .thanks { font-family: var(--font-pixel); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .copy { font-family: var(--font-ui); font-size: 1.2rem; }
+  .social { display: flex; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
+  .social a {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    color: var(--text);
+    border: 3px solid var(--frame);
+    background: var(--surface);
+    box-shadow: 3px 3px 0 0 var(--hard-shadow);
+    transition: translate 0.12s steps(2), box-shadow 0.12s steps(2);
+  }
+  .social a:hover { color: var(--accent); translate: -2px -2px; box-shadow: 5px 5px 0 0 var(--hard-shadow); }
+</style>

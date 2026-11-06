@@ -1,0 +1,72 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { url } from '../lib/url';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  /** Heading level, so cards nest correctly under the page's own headings. */
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { project, headingLevel = 'h3' } = Astro.props;
+const { title, summary, tech, status, context } = project.data;
+const Heading = headingLevel;
+const href = url(`projects/${project.id}/`);
+---
+
+<article class="card pixel-box">
+  <div class="meta">
+    {context && <span>{context}</span>}
+    {status && status !== 'Completed' && <span class="status">◆ {status}</span>}
+  </div>
+  <Heading class="title">
+    <!-- The whole card is clickable via the ::after overlay, but only the title is a link
+         (one tab stop, one clear accessible name). -->
+    <a href={href}>{title}</a>
+  </Heading>
+  <p class="summary">{summary}</p>
+  <ul class="tags" aria-label="Technologies">
+    {tech.map((t) => <li class="tag">{t}</li>)}
+  </ul>
+  <span class="more" aria-hidden="true">Read case study <span class="arrow">▶</span></span>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    height: calc(100% - var(--px) * 2);
+    padding: 1.5rem 1.5rem 1.4rem;
+    transition: translate 0.12s steps(2);
+  }
+  .card:hover, .card:focus-within { translate: -3px -3px; }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    font-family: var(--font-ui);
+    font-size: 1.2rem;
+    line-height: 1.2;
+    color: var(--text-muted);
+  }
+  .status { color: var(--accent); }
+
+  .title { font-size: 0.9rem; line-height: 1.6; margin: 0; }
+  .title a { color: var(--text); text-decoration: none; }
+  .title a::after { content: ''; position: absolute; inset: 0; }
+  .title a:focus-visible { outline: none; }
+  .title a:focus-visible::after { outline: 3px dashed var(--focus); outline-offset: 8px; }
+
+  .summary { color: var(--text-muted); margin: 0; flex: 1; }
+  .more {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .arrow { display: inline-block; margin-left: 0.3em; transition: translate 0.2s steps(2); }
+  .card:hover .arrow { translate: 4px 0; }
+</style>

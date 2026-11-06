@@ -1,0 +1,45 @@
+---
+import { site } from '../data/site';
+---
+
+<section id="about" class="section container" aria-labelledby="about-title">
+  <span class="section-label">Character</span>
+  <h2 id="about-title">About me</h2>
+
+  <div class="grid">
+    <div class="text pixel-box reveal">
+      {site.about.map((paragraph) => <p>{paragraph}</p>)}
+      {site.location && <p class="muted">Based in {site.location}.</p>}
+    </div>
+
+    {site.education.length > 0 && (
+      <aside class="education pixel-box reveal" style="--i: 1" aria-labelledby="education-title">
+        <h3 id="education-title">Education</h3>
+        {site.education.map((edu) => (
+          <div class="edu">
+            <p class="school">{edu.school}</p>
+            <p>{edu.degree}</p>
+            <p class="meta">{edu.dates}{edu.details && ` · ${edu.details}`}</p>
+          </div>
+        ))}
+      </aside>
+    )}
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 52rem) {
+    .grid { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
+  }
+  .text { padding: 1.6rem 1.75rem 0.6rem; }
+  .education { padding: 1.5rem 1.6rem; }
+  .edu + .edu { margin-top: 1.1rem; padding-top: 1.1rem; border-top: 3px dashed var(--frame-soft); }
+  .edu p { margin: 0; }
+  .school { font-weight: 650; }
+  .meta { font-family: var(--font-ui); font-size: 1.2rem; color: var(--text-muted); }
+</style>

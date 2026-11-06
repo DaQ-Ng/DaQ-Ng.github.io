@@ -1,0 +1,89 @@
+---
+import { site } from '../data/site';
+import { url } from '../lib/url';
+
+// Hash links point at homepage sections, so they also work from project pages.
+const links = [
+  { href: url('#about'), label: 'About' },
+  { href: url('#skills'), label: 'Skills' },
+  { href: url('#projects'), label: 'Projects' },
+  { href: url('#contact'), label: 'Contact' },
+];
+---
+
+<header class="site-header">
+  <div class="container inner">
+    <a class="brand" href={url()}>{site.name}</a>
+    <nav aria-label="Primary">
+      <ul>
+        {links.map((link) => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+        <li>
+          <a class="resume" href={url(site.resume)} download>Resume</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg);
+    border-bottom: 4px solid var(--frame);
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    min-height: 4.25rem;
+    padding-block: 0.5rem;
+  }
+  .brand {
+    font-family: var(--font-pixel);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text);
+    text-decoration: none;
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a {
+    display: inline-block;
+    padding: 0.4rem 0.55rem;
+    font-family: var(--font-ui);
+    font-size: 1.35rem;
+    line-height: 1.2;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  /* RPG menu cursor: a ▶ appears next to the hovered/focused item. Space is reserved, so nothing shifts. */
+  nav a::before {
+    content: '▶' / '';
+    display: inline-block;
+    width: 0.9em;
+    font-size: 0.8em;
+    color: var(--accent);
+    opacity: 0;
+  }
+  nav a:hover, nav a:focus-visible { color: var(--text); }
+  nav a:hover::before, nav a:focus-visible::before { opacity: 1; }
+  nav a.resume { color: var(--accent); }
+
+  /* Small phones: nav on its own row, cursor space removed so all items fit. */
+  @media (max-width: 30rem) {
+    nav { width: 100%; margin-inline: -0.45rem; }
+    nav a { padding: 0.35rem 0.45rem; font-size: 1.25rem; }
+    nav a::before { display: none; }
+  }
+</style>
