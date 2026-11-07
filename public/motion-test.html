@@ -27,6 +27,9 @@
 <div class="row"><div class="box c"></div> C: bobs (transform)</div>
 <div class="row"><div class="box d"></div> D: blinks only if motion allowed</div>
 <pre id="out">running…</pre>
+<p>Your homepage (live), checked from inside this page:</p>
+<pre id="site">loading homepage…</pre>
+<iframe id="frame" src="/" title="Homepage" style="width:100%;height:420px;border:2px solid #222"></iframe>
 <script>
   setTimeout(function () {
     var mm = function (q) { return matchMedia(q).matches; };
@@ -42,6 +45,33 @@
     ];
     document.getElementById('out').textContent = lines.join('\n');
   }, 3000);
+
+  // Inspect the real homepage loaded in the iframe: every animation, its target and state.
+  document.getElementById('frame').addEventListener('load', function () {
+    var f = this;
+    setTimeout(function () {
+      var out = [];
+      try {
+        var d = f.contentDocument, w = f.contentWindow;
+        var sprite = d.querySelector('.sprite');
+        var z = d.querySelector('.zzz span');
+        var cs = sprite && w.getComputedStyle(sprite);
+        var zs = z && w.getComputedStyle(z);
+        out.push('html class: ' + d.documentElement.className);
+        out.push('sprite tag: ' + (sprite ? sprite.tagName : 'none'));
+        out.push('sprite anim: ' + (cs ? cs.animationName + ' / ' + cs.animationPlayState + ' / translate ' + cs.translate : '-'));
+        out.push('zzz anim: ' + (zs ? zs.animationName + ' / font ' + zs.fontFamily + ' ' + zs.fontSize : '-'));
+        var anims = d.getAnimations ? d.getAnimations() : [];
+        out.push('animations: ' + anims.length);
+        anims.forEach(function (a) {
+          var t = a.effect && a.effect.target;
+          var tn = t ? (t.tagName + '.' + (t.getAttribute('class') || '').split(' ')[0]) : '?';
+          out.push('  ' + a.animationName + ' on ' + tn + ' = ' + a.playState + ' @' + Math.round(a.currentTime));
+        });
+      } catch (e) { out.push('error: ' + e.message); }
+      document.getElementById('site').textContent = out.join('\n');
+    }, 4000);
+  });
 </script>
 </body>
 </html>
