@@ -117,13 +117,21 @@ import PixelSprite from './PixelSprite.astro';
   }
   .links a:hover { color: var(--accent); }
 
+  /* Phones and tablets: a smaller sprite above the intro, so the animation shows there too.
+     Wide screens: full size, beside the text. */
   .hero-art {
-    display: none;
+    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.4rem;
+    order: -1;
+    justify-self: start;
   }
-  @media (min-width: 56rem) { .hero-art { display: flex; } }
+  .hero-art :global(.sprite) { width: 104px; height: auto; }
+  @media (min-width: 56rem) {
+    .hero-art { order: 0; justify-self: auto; }
+    .hero-art :global(.sprite) { width: auto; }
+  }
   .shadow { width: 130px; height: 8px; margin-top: -6px; background: var(--hard-shadow); opacity: 0.25; }
   .status {
     margin: 0;
