@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Motion test</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; margin: 16px; background: #f1e6cc; color: #222; }
+  .row { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+  .box { width: 40px; height: 40px; background: #c2410c; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes move { 50% { translate: 0 10px; } }
+  @keyframes moveT { 50% { transform: translateY(10px); } }
+  .a { animation: blink 1s steps(1) infinite; }
+  .b { animation: move 1s steps(2) infinite; }
+  .c { animation: moveT 1s steps(2) infinite; }
+  @media (prefers-reduced-motion: no-preference) { .d { animation: blink 1s steps(1) infinite; } }
+  pre { white-space: pre-wrap; word-break: break-word; background: #fff; padding: 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1 style="font-size:20px">Motion test</h1>
+<p>Wait 3 seconds, then screenshot the whole page.</p>
+<div class="row"><div class="box a"></div> A: blinks always</div>
+<div class="row"><div class="box b"></div> B: bobs (translate)</div>
+<div class="row"><div class="box c"></div> C: bobs (transform)</div>
+<div class="row"><div class="box d"></div> D: blinks only if motion allowed</div>
+<pre id="out">running…</pre>
+<script>
+  setTimeout(function () {
+    var mm = function (q) { return matchMedia(q).matches; };
+    var anims = document.getAnimations ? document.getAnimations() : [];
+    var lines = [
+      'reduce: ' + mm('(prefers-reduced-motion: reduce)'),
+      'no-preference: ' + mm('(prefers-reduced-motion: no-preference)'),
+      'animations: ' + anims.length,
+      'states: ' + anims.map(function (a) { return a.animationName + '=' + a.playState + '@' + Math.round(a.currentTime); }).join(', '),
+      'visibility: ' + document.visibilityState,
+      'size: ' + innerWidth + 'x' + innerHeight + ' dpr ' + devicePixelRatio,
+      'ua: ' + navigator.userAgent
+    ];
+    document.getElementById('out').textContent = lines.join('\n');
+  }, 3000);
+</script>
+</body>
+</html>
