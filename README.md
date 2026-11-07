@@ -1,5 +1,7 @@
 # Portfolio
 
+**Live site: [daq-ng.github.io](https://daq-ng.github.io)**
+
 A fast, accessible personal portfolio for software engineering job applications, styled as a **retro pixel RPG**
 (dialog-box panels, pixel fonts, a sprite, "quest log" projects).
 Built with [Astro](https://astro.build) as a fully static site: plain HTML and CSS plus one tiny inlined script for
