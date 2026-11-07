@@ -21,6 +21,7 @@
 </head>
 <body>
 <h1 style="font-size:20px">Motion test</h1>
+<p id="summary" style="font-size:22px;font-weight:700;background:#fff;padding:10px;border:3px solid #c2410c">Checking… wait 8 seconds</p>
 <p>Wait 3 seconds, then screenshot the whole page.</p>
 <div class="row"><div class="box a"></div> A: blinks always</div>
 <div class="row"><div class="box b"></div> B: bobs (translate)</div>
@@ -68,7 +69,15 @@
           var tn = t ? (t.tagName + '.' + (t.getAttribute('class') || '').split(' ')[0]) : '?';
           out.push('  ' + a.animationName + ' on ' + tn + ' = ' + a.playState + ' @' + Math.round(a.currentTime));
         });
-      } catch (e) { out.push('error: ' + e.message); }
+        var ua = navigator.userAgent;
+        var device = /iPhone/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' : 'Computer';
+        var app = /FBAN|FBAV|Messenger/.test(ua) ? 'Messenger' : /CriOS|Chrome\//.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : 'other';
+        var nod = anims.filter(function (a) { return a.animationName === 'nod'; })[0];
+        var stuck = anims.filter(function (a) { return a.playState !== 'running' && a.playState !== 'finished'; }).length;
+        document.getElementById('summary').textContent =
+          device + ' / ' + app + ' — ' + anims.length + ' anims, ' + stuck + ' stuck, nod: ' +
+          (nod ? nod.playState : 'MISSING') + ', reduce: ' + matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (e) { out.push('error: ' + e.message); document.getElementById('summary').textContent = 'Error: ' + e.message; }
       document.getElementById('site').textContent = out.join('\n');
     }, 4000);
   });
