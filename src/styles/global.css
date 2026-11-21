@@ -382,16 +382,21 @@ main > :last-child { padding-bottom: var(--section-gap); }
   z-index: 2;
   background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.28) 0 1px, rgb(255 255 255 / 0.035) 1px 2px, transparent 2px 3px);
 }
+/* The rolling band never moves the layer itself (a moved layer would stick out past the
+   bottom and make a scrolling screen, like the DAT.EXE title, show a scrollbar). Instead the
+   layer always covers exactly the screen, and the gradient slides inside it: the image is 3×
+   the screen's height with the band in its middle, so at 100% the band sits above the screen
+   and at 0% below it. */
 .crt::after {
   top: 0;
-  height: 35%;
+  bottom: 0;
   z-index: 3;
-  translate: 0 -100%;
-  background: linear-gradient(180deg, transparent, rgb(255 255 255 / 0.05) 40%, rgb(255 255 255 / 0.11) 50%, rgb(255 255 255 / 0.05) 60%, transparent);
+  background: linear-gradient(180deg, transparent 44%, rgb(255 255 255 / 0.05) 47%, rgb(255 255 255 / 0.11) 50%, rgb(255 255 255 / 0.05) 53%, transparent 56%)
+    0 100% / 100% 300% no-repeat;
 }
 @keyframes crt-roll {
-  from { translate: 0 -100%; }
-  to { translate: 0 calc(100% / 0.35); } /* band height is 35% of the screen */
+  from { background-position: 0 100%; }
+  to { background-position: 0 0%; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .crt::after { animation: crt-roll 5.5s linear infinite; animation-delay: var(--crt-delay, 0s); }
