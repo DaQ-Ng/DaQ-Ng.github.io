@@ -1,0 +1,49 @@
+---
+/**
+ * Project card for DAT.EXE (memory cards and the portfolio index).
+ * Missing links (null in portfolio.ts) show "coming soon" text instead of a dead button.
+ */
+import { isMissing, type GameProject } from '../data/portfolio';
+import { url } from '../lib/url';
+import Icon from './Icon.astro';
+
+interface Props {
+  project: GameProject;
+  /** Heading level for the title. */
+  level?: 'h3' | 'h4';
+}
+const { project: p, level = 'h3' } = Astro.props;
+const Heading = level;
+const links = [
+  p.page && { href: url(`projects/${p.page}/`), label: 'Case study', icon: 'arrow-right' as const, external: false },
+  !isMissing(p.repo) && { href: p.repo!, label: 'GitHub', icon: 'github' as const, external: true },
+  !isMissing(p.demo) && { href: p.demo!, label: 'Live demo', icon: 'external' as const, external: true },
+].filter(Boolean) as { href: string; label: string; icon: 'arrow-right' | 'github' | 'external'; external: boolean }[];
+const missing = [isMissing(p.repo) && 'GitHub link', isMissing(p.demo) && 'live demo'].filter(Boolean) as string[];
+const soon = missing.length ? `${missing.join(' and ')} coming soon.`.replace(/^./, (c) => c.toUpperCase()) : '';
+---
+
+<article class="dx-card">
+  <!-- Screenshot placeholder: swap for a real <img> when you have one. -->
+  <div class="dx-shot crt" aria-hidden="true">
+    <span class="dx-shot-bar"><i></i><i></i><i></i></span>
+    <span class="dx-shot-text">Screenshot coming soon</span>
+  </div>
+  <div class="dx-card-body">
+    <Heading class="dx-card-title">{p.title}<span class="dx-badge" data-dx-badge={p.fragment} hidden>◆ recovered</span></Heading>
+    <ul class="dx-chips" aria-label="Technologies">{p.tech.map((t) => <li>{t}</li>)}</ul>
+    <p>{p.summary}</p>
+    {links.length > 0 && (
+      <div class="dx-links">
+        {links.map((l) => (
+          <a class="btn btn-secondary btn-sm" href={l.href} {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+            <Icon name={l.icon} size={16} /> {l.label}
+            {l.external && <span class="visually-hidden"> for {p.title} (opens in a new tab)</span>}
+            {!l.external && <span class="visually-hidden"> for {p.title}</span>}
+          </a>
+        ))}
+      </div>
+    )}
+    {missing.length > 0 && <p class="dx-soon">{soon}</p>}
+  </div>
+</article>

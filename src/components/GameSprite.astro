@@ -1,0 +1,28 @@
+---
+/**
+ * One image from Dat's sprite sheet (public/game/<name>.png), scaled by whole pixels.
+ * Width and height come from the PNG header at build time, so there's no layout shift.
+ * Decorative by default (empty alt).
+ */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { url } from '../lib/url';
+
+interface Props {
+  name: string;
+  scale?: number;
+  class?: string;
+  alt?: string;
+}
+const { name, scale = 1, class: className, alt = '' } = Astro.props;
+
+const png = readFileSync(join(process.cwd(), 'public', 'game', `${name}.png`));
+const width = png.readUInt32BE(16) * scale;
+const height = png.readUInt32BE(20) * scale;
+---
+
+<img class:list={['game-sprite', className]} src={url(`game/${name}.png`)} width={width} height={height} alt={alt} loading="lazy" decoding="async" />
+
+<style>
+  .game-sprite { display: block; image-rendering: pixelated; max-width: none; flex: none; }
+</style>

@@ -1,0 +1,430 @@
+---
+/**
+ * DAT.EXE: The Lost Save File — the homepage's optional micro-RPG.
+ * Game code: src/game/ (main.ts wires this markup). Content: src/data/portfolio.ts.
+ *
+ * Everything the game reveals is also server-rendered here (and in the normal sections
+ * below the game), so the portfolio works without playing and without JavaScript.
+ */
+import { site, isMissing } from '../data/portfolio';
+import { url } from '../lib/url';
+import Icon from './Icon.astro';
+import DxProjectCard from './DxProjectCard.astro';
+
+const projects = site.gameProjects;
+const linkedIn = !isMissing(site.contact.linkedin);
+const github = !isMissing(site.contact.github);
+---
+
+<section class="datexe section container" data-datexe aria-labelledby="dx-title">
+  <div class="dx-shell panel">
+    <!-- Always-visible options: never trapped in the game. -->
+    <div class="dx-toolbar" role="toolbar" aria-label="Game options">
+      <button type="button" class="dx-tool" data-dx-open="index"><span aria-hidden="true">▤</span> Portfolio</button>
+      <button type="button" class="dx-tool" data-dx-open="controls"><span aria-hidden="true">⌨</span> Controls</button>
+      <button type="button" class="dx-tool" data-dx-mute aria-pressed="false"><span aria-hidden="true">♪</span> <span data-label>Sound on</span></button>
+      <button type="button" class="dx-tool" data-dx-motion aria-pressed="false"><span aria-hidden="true">◐</span> <span data-label>Reduced motion: off</span></button>
+      <a class="dx-tool dx-skip" href="#projects">Skip adventure ▸</a>
+    </div>
+
+    <div class="dx-frame">
+      <div
+        class="dx-screen"
+        tabindex="0"
+        role="application"
+        aria-roledescription="game"
+        aria-label="DAT.EXE game. Arrow keys or W A S D to move, E or Space to interact, Escape to close dialogue."
+      >
+        <canvas data-dx-canvas width="320" height="180" aria-hidden="true"></canvas>
+
+        <div class="dx-hud" aria-hidden="true">
+          <span class="dx-area" data-dx-area>Terminal Room</span>
+          <span class="dx-frags">
+            {projects.map((p) => <i data-frag={p.fragment}></i>)}
+            <b><span data-dx-fragcount>0</span>/3</b>
+          </span>
+        </div>
+
+        <div class="dx-dialogue" data-dx-dialogue hidden>
+          <p class="dx-who" data-dx-who></p>
+          <p class="dx-text" data-dx-text aria-live="polite"></p>
+          <span class="dx-next" aria-hidden="true">▼</span>
+        </div>
+        <p class="visually-hidden" data-dx-live aria-live="polite"></p>
+        <div class="dx-toast" data-dx-toast role="status" hidden></div>
+
+        <!-- Boot screen (also the page intro). -->
+        <div class="dx-boot crt" data-dx-boot>
+          <div class="dx-boot-inner">
+            <h1 id="dx-title" class="dx-boot-title">
+              <span class="dx-logo">DAT.EXE</span>
+              <span class="dx-name">{site.name}</span>
+            </h1>
+            <p class="dx-role">{site.role} · <span class="dx-sub">The Lost Save File</span></p>
+            <div class="dx-log" data-dx-bootlog aria-live="polite"></div>
+            <div class="dx-boot-actions" data-dx-bootactions hidden>
+              <button type="button" class="btn btn-primary" data-dx-recover hidden>▶ Recover</button>
+              <button type="button" class="btn btn-primary" data-dx-continue hidden>▶ Continue</button>
+              <button type="button" class="btn btn-secondary" data-dx-newgame hidden>New game</button>
+              <button type="button" class="btn btn-secondary" data-dx-open="index">View portfolio</button>
+            </div>
+            <noscript>
+              <p class="dx-noscript">The adventure needs JavaScript. <a href="#projects">Jump to the portfolio ▸</a></p>
+            </noscript>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dx-touch" aria-label="Touch controls">
+      <div class="dx-dpad">
+        <button type="button" data-dx-dir="up" aria-label="Move up">▲</button>
+        <button type="button" data-dx-dir="left" aria-label="Move left">◀</button>
+        <button type="button" data-dx-dir="right" aria-label="Move right">▶</button>
+        <button type="button" data-dx-dir="down" aria-label="Move down">▼</button>
+      </div>
+      <p class="dx-touch-hint">Tap the world to walk there</p>
+      <button type="button" class="dx-a" data-dx-a aria-label="Interact">E</button>
+    </div>
+  </div>
+
+  <!-- ═════════ Dialogs ═════════ -->
+
+  <dialog class="dx-dialog" id="dx-controls" aria-labelledby="dx-controls-t">
+    <header class="dx-dh"><h2 id="dx-controls-t">Controls &amp; settings</h2><form method="dialog"><button class="dx-x" aria-label="Close">✕</button></form></header>
+    <dl class="dx-keys">
+      <div><dt>Move</dt><dd>Arrow keys or W A S D · tap the world · on-screen pad</dd></div>
+      <div><dt>Interact / next line</dt><dd>E or Space (or Enter) · the E button · tap</dd></div>
+      <div><dt>Close</dt><dd>Esc closes dialogue and windows</dd></div>
+      <div><dt>Goal</dt><dd>Recover 3 memory fragments (◆), then open the restore chamber. Talk to BYTE for hints.</dd></div>
+    </dl>
+    <div class="dx-settings">
+      <button type="button" class="btn btn-secondary btn-sm" data-dx-mute aria-pressed="false"><span data-label>Sound on</span></button>
+      <button type="button" class="btn btn-secondary btn-sm" data-dx-motion aria-pressed="false"><span data-label>Reduced motion: off</span></button>
+      <button type="button" class="btn btn-secondary btn-sm" data-dx-reset>Reset progress</button>
+    </div>
+    <p class="dx-note" data-dx-storage-note hidden>Your browser isn't allowing saved data, so progress lasts only until you leave the page.</p>
+  </dialog>
+
+  <dialog class="dx-dialog" id="dx-puzzle" aria-labelledby="dx-puzzle-t">
+    <header class="dx-dh"><h2 id="dx-puzzle-t" data-dx-puzzle-title>Puzzle</h2><form method="dialog"><button class="dx-x" aria-label="Leave puzzle">✕</button></form></header>
+    <p class="dx-help" data-dx-puzzle-help></p>
+    <div data-dx-puzzle-body></div>
+    <p class="dx-status" data-dx-puzzle-status role="status"></p>
+  </dialog>
+
+  {projects.map((p, i) => (
+    <dialog class="dx-dialog dx-memory" id={`dx-memory-${p.fragment}`} aria-labelledby={`dx-mem-${p.fragment}`}>
+      <header class="dx-dh">
+        <h2 id={`dx-mem-${p.fragment}`}>Memory {i + 1}/3 restored</h2>
+        <form method="dialog"><button class="dx-x" aria-label="Close">✕</button></form>
+      </header>
+      <p class="dx-memory-line">“{p.memory}”</p>
+      <DxProjectCard project={p} />
+    </dialog>
+  ))}
+
+  <dialog class="dx-dialog" id="dx-skills" aria-labelledby="dx-skills-t">
+    <header class="dx-dh"><h2 id="dx-skills-t">Workbench · Technical skills</h2><form method="dialog"><button class="dx-x" aria-label="Close">✕</button></form></header>
+    <div class="dx-skillgrid">
+      {site.skills.map((g) => (
+        <div class="dx-skill"><h3>{g.category}</h3><ul class="dx-chips">{g.items.map((s) => <li>{s}</li>)}</ul></div>
+      ))}
+    </div>
+  </dialog>
+
+  <dialog class="dx-dialog" id="dx-education" aria-labelledby="dx-edu-t">
+    <header class="dx-dh"><h2 id="dx-edu-t">Archive · Education</h2><form method="dialog"><button class="dx-x" aria-label="Close">✕</button></form></header>
+    {site.education.map((e) => (
+      <div class="dx-edu"><h3>{e.school}</h3><p>{e.degree} · {e.dates}{e.details && ` · ${e.details}`}</p></div>
+    ))}
+  </dialog>
+
+  <dialog class="dx-dialog" id="dx-about" aria-labelledby="dx-about-t">
+    <header class="dx-dh"><h2 id="dx-about-t">Personal room · About me</h2><form method="dialog"><button class="dx-x" aria-label="Close">✕</button></form></header>
+    {site.about.map((t) => <p>{t}</p>)}
+    <h3>Interests</h3>
+    <ul class="dx-chips">{site.interests.map((t) => <li>{t}</li>)}</ul>
+  </dialog>
+
+  <dialog class="dx-dialog" id="dx-contact" aria-labelledby="dx-contact-t">
+    <header class="dx-dh"><h2 id="dx-contact-t">Signal beacon · Contact</h2><form method="dialog"><button class="dx-x" aria-label="Close">✕</button></form></header>
+    <p>{site.contact.message}</p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href={`mailto:${site.contact.email}`}><Icon name="mail" /> Email</a>
+      {github && <a class="btn btn-secondary" href={site.contact.github} target="_blank" rel="noopener noreferrer"><Icon name="github" /> GitHub<span class="visually-hidden"> (opens in a new tab)</span></a>}
+      {linkedIn && <a class="btn btn-secondary" href={site.contact.linkedin} target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a>}
+      <a class="btn btn-secondary" href={url(site.resume)} download><Icon name="download" /> Resume</a>
+    </div>
+    <p class="dx-addr">{site.contact.email}</p>
+  </dialog>
+
+  <dialog class="dx-dialog dx-restored" id="dx-restored" aria-labelledby="dx-restored-t">
+    <h2 id="dx-restored-t" class="dx-big">SAVE RESTORED</h2>
+    <p>All memories recovered. Thanks for playing — here's everything in one place.</p>
+    <div class="btn-row dx-center">
+      <button type="button" class="btn btn-primary" data-dx-to-index>Open portfolio index</button>
+      <form method="dialog"><button class="btn btn-secondary">Keep exploring</button></form>
+    </div>
+  </dialog>
+
+  <!-- The complete portfolio, available any time from the toolbar. -->
+  <dialog class="dx-dialog dx-index" id="dx-index" aria-labelledby="dx-index-t">
+    <header class="dx-dh"><h2 id="dx-index-t">Portfolio index</h2><form method="dialog"><button class="dx-x" aria-label="Close">✕</button></form></header>
+    <p class="dx-progress" data-dx-progress>Everything is listed here, whether or not you play.</p>
+    <nav class="dx-toc" aria-label="Portfolio sections">
+      <a href="#dxi-about">About</a><a href="#dxi-projects">Projects</a><a href="#dxi-skills">Skills</a><a href="#dxi-edu">Education</a><a href="#dxi-contact">Contact</a>
+    </nav>
+
+    <section id="dxi-about" aria-labelledby="dxi-about-t">
+      <h3 id="dxi-about-t">{site.name} — {site.role}</h3>
+      <p>{site.intro}</p>
+      {site.about.map((t) => <p>{t}</p>)}
+      <p><b>Interests:</b> {site.interests.join(' · ')}</p>
+    </section>
+
+    <section id="dxi-projects" aria-labelledby="dxi-projects-t">
+      <h3 id="dxi-projects-t">Projects</h3>
+      <div class="dx-cardgrid">{projects.map((p) => <DxProjectCard project={p} level="h4" />)}</div>
+    </section>
+
+    <section id="dxi-skills" aria-labelledby="dxi-skills-t">
+      <h3 id="dxi-skills-t">Skills</h3>
+      <div class="dx-skillgrid">
+        {site.skills.map((g) => (<div class="dx-skill"><h4>{g.category}</h4><ul class="dx-chips">{g.items.map((s) => <li>{s}</li>)}</ul></div>))}
+      </div>
+    </section>
+
+    <section id="dxi-edu" aria-labelledby="dxi-edu-t">
+      <h3 id="dxi-edu-t">Education</h3>
+      {site.education.map((e) => (<p><b>{e.school}</b><br />{e.degree} · {e.dates}{e.details && ` · ${e.details}`}</p>))}
+    </section>
+
+    <section id="dxi-contact" aria-labelledby="dxi-contact-t">
+      <h3 id="dxi-contact-t">Contact</h3>
+      <div class="btn-row">
+        <a class="btn btn-primary btn-sm" href={`mailto:${site.contact.email}`}><Icon name="mail" size={16} /> {site.contact.email}</a>
+        {github && <a class="btn btn-secondary btn-sm" href={site.contact.github} target="_blank" rel="noopener noreferrer"><Icon name="github" size={16} /> GitHub<span class="visually-hidden"> (opens in a new tab)</span></a>}
+        {linkedIn && <a class="btn btn-secondary btn-sm" href={site.contact.linkedin} target="_blank" rel="noopener noreferrer"><Icon name="linkedin" size={16} /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a>}
+        <a class="btn btn-secondary btn-sm" href={url(site.resume)} download><Icon name="download" size={16} /> Resume (PDF)</a>
+      </div>
+    </section>
+    <p class="dx-note"><a href="#projects" data-dx-closeall>Prefer a normal page? Scroll to the full portfolio below ▸</a></p>
+  </dialog>
+</section>
+
+<script>
+  import { mountDatExe } from '../game/main';
+  const root = document.querySelector<HTMLElement>('[data-datexe]');
+  if (root) mountDatExe(root);
+</script>
+
+<style is:global>
+  /* ═════════ DAT.EXE ═════════ */
+  .datexe { --s: 2; }
+  .dx-shell { padding: 0.6rem; background: var(--ink); border-color: var(--paper); box-shadow: 0 0 0 3px var(--ink); }
+
+  .dx-toolbar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+  .dx-tool {
+    display: inline-flex; align-items: center; gap: 0.35rem; min-height: 40px; padding: 0.25rem 0.75rem;
+    font: inherit; font-size: 1rem; font-weight: 600; color: var(--paper); background: transparent;
+    border: 2px solid var(--tone-mid); border-radius: 4px; cursor: pointer; text-decoration: none;
+  }
+  .dx-tool:hover, .dx-tool[aria-pressed='true'] { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+  .dx-tool:focus-visible { outline: 3px dashed var(--paper); outline-offset: 2px; }
+  .dx-skip { margin-left: auto; color: var(--paper); }
+  .dx-skip:hover { text-decoration: none; }
+
+  .dx-frame { display: grid; place-items: center; background: #000; border-radius: 4px; padding: 6px 0; }
+  .dx-screen { width: min(100%, 960px); aspect-ratio: 16 / 9; position: relative; overflow: hidden; background: #000; outline: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .dx-screen:focus-visible { box-shadow: 0 0 0 3px var(--paper); }
+  .dx-screen canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; }
+  /* Faint CRT scanlines over the canvas. */
+  .dx-screen::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.12) 0 1px, transparent 1px calc(var(--s) * 1px + 1px));
+  }
+  .dx-reduced .dx-screen::after { display: none; }
+
+  /* Overlays scale with the screen. */
+  .dx-hud {
+    position: absolute; top: calc(var(--s) * 4px); left: calc(var(--s) * 4px); right: calc(var(--s) * 4px);
+    display: flex; justify-content: space-between; pointer-events: none; z-index: 2;
+    font-size: clamp(0.8rem, calc(var(--s) * 5.5px), 1.15rem); font-weight: 600;
+  }
+  .dx-hud > span { background: var(--ink); color: var(--paper); padding: 0.05em 0.5em; border: 2px solid var(--paper); border-radius: 3px; }
+  .dx-frags { display: inline-flex; align-items: center; gap: 0.35em; }
+  .dx-frags i { width: 0.6em; height: 0.6em; border: 2px solid var(--paper); rotate: 45deg; display: inline-block; }
+  .dx-frags i.got { background: var(--paper); }
+  .dx-frags b { margin-left: 0.2em; }
+
+  .dx-dialogue {
+    position: absolute; z-index: 3; left: calc(var(--s) * 6px); right: calc(var(--s) * 6px); bottom: calc(var(--s) * 5px);
+    padding: 0.45em 0.9em 0.7em; background: var(--ink); color: var(--paper);
+    border: 3px solid var(--paper); border-radius: 6px; box-shadow: 0 0 0 3px var(--ink), inset 0 0 0 2px var(--ink), inset 0 0 0 3px var(--tone-mid);
+    font-size: clamp(0.95rem, calc(var(--s) * 6px), 1.3rem); line-height: 1.35; cursor: pointer;
+  }
+  .dx-dialogue[hidden] { display: none; }
+  .dx-who { margin: 0 0 0.15em; font-weight: 700; color: var(--tone-light); font-size: 0.85em; letter-spacing: 0.08em; }
+  .dx-text { margin: 0; min-height: 2.7em; }
+  .dx-next { position: absolute; right: 0.7em; bottom: 0.35em; font-size: 0.7em; opacity: 0; }
+  .dx-dialogue.done .dx-next { opacity: 1; animation: dx-blink 1s steps(1) infinite; }
+
+  .dx-toast {
+    position: absolute; z-index: 4; left: 50%; top: calc(var(--s) * 22px); translate: -50% 0; white-space: nowrap; max-width: 92%;
+    overflow: hidden; text-overflow: ellipsis; padding: 0.3em 0.9em; background: var(--paper); color: var(--ink);
+    border: 3px solid var(--ink); outline: 2px solid var(--paper); font-weight: 700; font-size: clamp(0.8rem, calc(var(--s) * 5.5px), 1.1rem);
+  }
+  .dx-toast[hidden] { display: none; }
+
+  .dx-boot {
+    position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; overflow-y: auto;
+    padding: 1rem; background: var(--ink); color: var(--paper);
+    /* Scanlines and the rolling band come from the global .crt class. */
+  }
+  .dx-boot[hidden] { display: none; }
+  /* Narrow screens while booting: the boot screen sets the height instead of the 16:9 canvas. */
+  .dx-screen.dx-tall { aspect-ratio: auto; min-height: 24rem; }
+  .dx-screen.dx-tall canvas { position: absolute; inset: 0; }
+  .dx-screen.dx-tall .dx-boot { position: relative; min-height: 24rem; }
+  .dx-boot-inner { width: min(34rem, 100%); }
+  .dx-boot-title { margin: 0 0 0.3rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.8rem; }
+  .dx-logo { font-size: clamp(1.6rem, 6vw, 2.6rem); letter-spacing: 0.06em; }
+  .dx-name { font-size: clamp(1rem, 3vw, 1.4rem); color: var(--tone-light); }
+  .dx-role { margin: 0 0 1rem; color: var(--tone-light); }
+  .dx-sub { color: var(--paper); }
+  .dx-log { min-height: 6.2em; font-size: clamp(1rem, 2.4vw, 1.2rem); }
+  .dx-log p { margin: 0; }
+  .dx-log p::before { content: ''; }
+  .dx-log .err { color: var(--paper); background: var(--tone-dark); display: inline-block; padding: 0 0.3em; animation: dx-glitch 0.6s steps(2) 2; }
+  .dx-log .ok { color: var(--paper); }
+  .dx-log .ask::after { content: '_'; animation: dx-blink 1s steps(1) infinite; }
+  .dx-boot-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1rem; }
+  .dx-boot-actions[hidden], .dx-boot-actions [hidden] { display: none; }
+  .dx-boot .btn-secondary { background: var(--ink); color: var(--paper); --btn-face: var(--ink); --btn-line: var(--paper); border-color: var(--paper); }
+  .dx-boot .btn-primary { background: var(--paper); color: var(--ink); --btn-face: var(--paper); --btn-line: var(--ink); border-color: var(--paper); }
+  .dx-noscript a { color: var(--paper); }
+
+  /* Touch pad: under the screen, shown on touch devices and small screens. */
+  .dx-touch { display: none; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 0.4rem 0.2rem; }
+  .dx-js.dx-playing .dx-touch { display: none; }
+  @media (pointer: coarse), (max-width: 48rem) {
+    .dx-js.dx-playing .dx-touch { display: flex; }
+  }
+  .dx-dpad { display: grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(3, 46px); gap: 3px; }
+  .dx-dpad [data-dx-dir='up'] { grid-area: 1 / 2; }
+  .dx-dpad [data-dx-dir='left'] { grid-area: 2 / 1; }
+  .dx-dpad [data-dx-dir='right'] { grid-area: 2 / 3; }
+  .dx-dpad [data-dx-dir='down'] { grid-area: 3 / 2; }
+  .dx-touch button {
+    font: inherit; font-weight: 700; color: var(--ink); background: var(--paper); border: 3px solid var(--tone-mid);
+    border-radius: 6px; touch-action: none; cursor: pointer;
+  }
+  .dx-touch button.on, .dx-touch button:active { background: var(--tone-light); }
+  .dx-a { width: 66px; height: 66px; border-radius: 50% !important; font-size: 1.4rem; }
+  .dx-touch-hint { margin: 0; color: var(--tone-light); font-size: 0.9rem; text-align: center; }
+
+  /* ───── Dialogs ───── */
+  .dx-dialog {
+    width: min(52rem, calc(100% - 1.5rem)); max-height: 88vh; padding: 0 clamp(1rem, 4vw, 1.75rem) 1.5rem;
+    color: var(--ink); background: var(--paper); border: 3px solid var(--ink); border-radius: 6px;
+    box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--ink), 0 0 0 3px var(--paper);
+  }
+  .dx-dialog::backdrop { background: rgb(8 8 8 / 0.78); }
+  .dx-dh {
+    position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 0.6rem;
+    margin: 0 0 1rem; padding: 1.1rem 0 0.7rem; background: var(--paper); border-bottom: 3px solid var(--ink);
+  }
+  .dx-dh h2 { margin: 0; flex: 1; font-size: clamp(1.25rem, 3vw, 1.6rem); }
+  .dx-dh form { margin: 0; }
+  .dx-x { width: 44px; height: 44px; border: 3px solid var(--ink); border-radius: 4px; background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+  .dx-x:hover { background: var(--ink); color: var(--paper); }
+  .dx-dialog h3 { margin: 1.3rem 0 0.5rem; }
+  .dx-dialog section { scroll-margin-top: 5rem; }
+  .dx-note { margin: 1rem 0 0; color: var(--text-muted); }
+  .dx-help { margin-top: 0; }
+  .dx-status { min-height: 1.6em; margin: 1rem 0 0; font-weight: 600; }
+  .dx-center { justify-content: center; }
+  .dx-progress { margin: 0 0 0.6rem; font-weight: 600; }
+  .dx-toc { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; padding-bottom: 0.5rem; border-bottom: 2px dashed var(--tone-mid); }
+
+  .dx-restored { text-align: center; padding-top: 2rem; }
+  .dx-big { font-size: clamp(2rem, 7vw, 3.2rem); letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+
+  .dx-memory-line { font-size: 1.15rem; font-style: italic; color: var(--text-muted); }
+
+  .dx-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; margin: 0; padding: 0; }
+  .dx-chips li { padding: 0.05rem 0.5rem; border: 2px solid var(--ink); background: var(--paper-2); font-size: 0.95rem; }
+  .dx-skillgrid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); }
+  .dx-skill h3, .dx-skill h4 { margin: 0 0 0.45rem; }
+  .dx-edu h3 { margin: 0.6rem 0 0.2rem; }
+  .dx-addr { margin-top: 1rem; color: var(--text-muted); overflow-wrap: anywhere; }
+
+  .dx-cardgrid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); }
+  .dx-card { border: 3px solid var(--ink); border-radius: 5px; background: var(--paper); box-shadow: 3px 3px 0 var(--ink); overflow: hidden; }
+  .dx-shot {
+    position: relative; display: grid; place-items: center; height: 6.5rem; background: var(--ink); color: var(--tone-light);
+    --crt-delay: -1s;
+  }
+  .dx-cardgrid > :nth-child(2) .dx-shot { --crt-delay: -2.8s; }
+  .dx-cardgrid > :nth-child(3) .dx-shot { --crt-delay: -4.4s;
+  }
+  .dx-shot-bar { position: absolute; top: 0.45rem; left: 0.55rem; display: flex; gap: 4px; }
+  .dx-shot-bar i { width: 7px; height: 7px; background: var(--tone-mid); }
+  .dx-shot-text { font-size: 0.9rem; }
+  .dx-card-body { padding: 0.8rem 0.9rem 1rem; }
+  .dx-card-body p { margin: 0.6rem 0 0; }
+  .dx-card-title { margin: 0 0 0.5rem !important; font-size: 1.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; }
+  .dx-badge { font-size: 0.8rem; padding: 0 0.4rem; background: var(--ink); color: var(--paper); }
+  .dx-badge[hidden] { display: none; }
+  .dx-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+  .dx-soon { font-size: 0.95rem; color: var(--text-muted); }
+  .dx-keys { display: grid; gap: 0.6rem; margin: 0 0 1.2rem; }
+  .dx-keys dt { font-weight: 700; }
+  .dx-keys dd { margin: 0; }
+  .dx-settings { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+  /* ───── Puzzles ───── */
+  .dx-circuit { display: grid; grid-template-columns: auto minmax(4rem, 1fr) auto; align-items: stretch; gap: 0.5rem; max-width: 26rem; margin: 0 auto; }
+  .dx-circuit .col { display: grid; gap: 0.5rem; }
+  .dx-circuit svg { width: 100%; height: 100%; overflow: visible; }
+  .dx-circuit line { stroke: var(--ink); stroke-width: 3; vector-effect: non-scaling-stroke; }
+  .dx-circuit button, .dx-tuner button, .dx-dungeon button {
+    font: inherit; font-weight: 700; color: var(--ink); background: var(--paper); border: 3px solid var(--ink); border-radius: 4px; cursor: pointer;
+  }
+  .dx-circuit button { width: 3.4rem; height: 3.4rem; font-size: 1.5rem; }
+  .dx-circuit button[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+  .dx-circuit button[data-linked] { background: var(--tone-light); }
+  .dx-circuit button:disabled, .dx-tuner button:disabled, .dx-dungeon button:disabled { cursor: default; }
+
+  .dx-dungeon { display: grid; grid-template-columns: repeat(var(--w), minmax(0, 2.3rem)); gap: 2px; justify-content: center; background: var(--ink); padding: 4px; width: fit-content; margin: 0 auto; border-radius: 4px; }
+  .dx-dungeon > * { aspect-ratio: 1; }
+  .dx-dungeon .wall { background: var(--tone-dark); }
+  .dx-dungeon button { border-width: 1px; border-radius: 0; padding: 0; font-size: 1rem; background: var(--tone-light); }
+  .dx-dungeon button.start { background: var(--paper); }
+  .dx-dungeon button.exit { background: var(--paper); animation: dx-blink 0.9s steps(1) infinite; }
+  .dx-dungeon button:hover, .dx-dungeon button:focus-visible { outline: 2px solid var(--paper); outline-offset: -4px; }
+
+  .dx-target { text-align: center; font-size: 1.3rem; }
+  .dx-target b { display: inline-block; min-width: 2.2rem; padding: 0 0.3rem; margin: 0 0.15rem; border: 2px solid var(--ink); }
+  .dx-tuner { display: flex; justify-content: center; gap: 0.8rem; flex-wrap: wrap; }
+  .dx-tuner button { display: grid; justify-items: center; min-width: 5.5rem; padding: 0.6rem 0.4rem; }
+  .dx-tuner .glyph { font-size: 2rem; line-height: 1; }
+  .dx-tuner .name { font-size: 0.9rem; font-weight: 400; }
+  .dx-tuner button[data-ok] { background: var(--ink); color: var(--paper); }
+
+  @keyframes dx-blink { 50% { opacity: 0; } }
+  @keyframes dx-glitch { 50% { translate: 3px 0; } }
+  .dx-reduced *, .dx-reduced *::before, .dx-reduced *::after { animation: none !important; }
+  .dx-reduced .dx-dungeon button.exit { outline: 3px solid var(--ink); outline-offset: -6px; }
+  @media (prefers-reduced-motion: reduce) {
+    .dx-dungeon button.exit { animation: none; outline: 3px solid var(--ink); outline-offset: -6px; }
+  }
+
+  @media (max-width: 40rem) {
+    .dx-shell { padding: 0.4rem; }
+    .dx-tool { min-height: 38px; padding: 0.2rem 0.55rem; font-size: 0.9rem; }
+    .dx-skip { margin-left: 0; }
+    .dx-dungeon { grid-template-columns: repeat(var(--w), minmax(0, 1.7rem)); }
+  }
+</style>

@@ -29,6 +29,7 @@ const { Content } = await render(project);
 
 <BaseLayout title={title} description={summary}>
   <article class="container project">
+    <div class="panel"><div class="panel-body">
     <a class="back" href={url('#projects')}>◀ Back to quest log</a>
 
     <header class="project-header pixel-box">
@@ -74,11 +75,12 @@ const { Content } = await render(project);
         <a href={url(`projects/${next.id}/`)}>{next.data.title} ▶</a>
       </nav>
     )}
+    </div></div>
   </article>
 </BaseLayout>
 
 <style>
-  .project { padding-block: 2rem var(--section-gap); }
+  .project { padding-top: var(--section-gap); }
   .back {
     display: inline-flex;
     align-items: center;
@@ -93,9 +95,9 @@ const { Content } = await render(project);
   .project-header {
     max-width: 52rem;
     padding: clamp(1.5rem, 4vw, 2.5rem);
-    margin-block: 1rem 3rem;
+    margin-block: 1rem 2.5rem;
   }
-  h1 { font-size: clamp(1.2rem, 4vw, 1.9rem); }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); }
   .summary { font-size: 1.15rem; color: var(--text-muted); }
 
   .facts {
@@ -106,12 +108,12 @@ const { Content } = await render(project);
   }
   .facts dt {
     font-family: var(--font-pixel);
-    font-size: 0.55rem;
+    font-size: 0.95rem;
     text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 0.35rem;
   }
-  .facts dd { margin: 0; font-family: var(--font-ui); font-size: 1.35rem; line-height: 1.2; }
+  .facts dd { margin: 0; font-family: var(--font-ui); font-size: 1.2rem; line-height: 1.2; }
   .facts .status { color: var(--accent); }
   .actions { margin-top: 1.75rem; }
 
@@ -126,7 +128,7 @@ const { Content } = await render(project);
   .label { font-family: var(--font-ui); font-size: 1.25rem; color: var(--text-muted); text-transform: uppercase; }
   .next a {
     font-family: var(--font-pixel);
-    font-size: 0.8rem;
+    font-size: 1.25rem;
     line-height: 1.6;
     text-decoration: none;
   }

@@ -3,39 +3,48 @@
 ## Project goal
 A static personal portfolio for entry-level Software Engineer / Backend Developer applications:
 hero intro, About, Skills, Featured Projects, project detail pages, resume download, GitHub/LinkedIn, Contact.
+The homepage opens with **DAT.EXE: The Lost Save File**, an optional 3–5 minute pixel-art micro-RPG that
+reveals the same content (spec: Downloads/CLAUDE_BUILD_PROMPT.md).
 
-## Current status (2026-11-06)
-- **Works:** all sections and pages render; responsive at 375px and desktop; light + dark themes;
-  project pages generated from Markdown; 404 page; resume download; GitHub Pages workflow written.
-- **Content (updated 2026-11-06):** `site.ts` filled from Dat_Nguyen_General.pdf; real resume in `public/`.
-  Projects: `bookapi.md`, `notewave.md`, written from the repos' code and the resume (checked `@Version`,
-  409 handler, upload/RQ/Redis/CORS code). Phone number and citizenship line left off the site on purpose.
-  Intro/About are a draft to rewrite in Dat's own voice. No placeholders remain.
+## Current status (2026-11-22)
+- **Works:** DAT.EXE end to end (boot → 3 puzzles → 3 project cards → chamber unseals → SAVE RESTORED →
+  portfolio index), 4 optional discoveries (skills, education, about+interests, contact), save/continue,
+  reset, mute, reduced motion, keyboard + touch pad + tap-to-move, 375 px and desktop. Normal sections,
+  project pages, 404 and resume download unchanged below the game.
+- **Content:** all text and links in `src/data/portfolio.ts` (`site.ts` re-exports it). Skills = resume list
+  plus Docker and Linux (Dat chose "merge both"). Intro/About still a draft to rewrite in Dat's voice.
 - **Live:** https://daq-ng.github.io (GitHub Pages, repo DaQ-Ng/DaQ-Ng.github.io). Every push to `main`
-  rebuilds and redeploys via `.github/workflows/deploy.yml`. First deploy run succeeded 2026-11-06.
-- **Repo issues found (fix before recruiters look):** notewave `backend/app/main.py` and
-  `backend/requirements.txt` contain unresolved merge-conflict markers; Bookapi README only documents
-  books (not auth/orders/reviews). Resume says "12 tests" for Bookapi; the repo has 20 `@Test` methods (not run).
+  rebuilds and redeploys via `.github/workflows/deploy.yml`. DAT.EXE is not committed/deployed yet.
+- **Link issues:** `https://github.com/DaQ-Ng/notewave` returns 404 publicly (private or renamed). Set to `null`
+  in `portfolio.ts` so the game shows "coming soon"; `src/content/projects/notewave.md` still links it.
+  Dungeon Crawler has no repo, demo or case-study page yet (all `null` + TODO).
+- **Repo issues found earlier:** notewave merge-conflict markers (fix on branch `fix/main-merge-markers`,
+  commit 44c414b, not merged); Bookapi README only documents books; resume says "12 tests", repo has 20.
 
 ## Architecture and tools
-Astro 5 (static output), retro pixel RPG theme in plain CSS tokens, pixel fonts via @fontsource, ~0.5 KB inline JS for scroll reveal. See README §2.
-Commands: `npm run dev`, `npm run build`, `npm run preview`, `npm run check:content -- --verbose`.
+Astro 5 (static output), 1-bit theme in CSS tokens, Pixelify Sans via @fontsource. See README.
+DAT.EXE: `src/components/DatExe.astro` (markup, dialogs, styles) + `src/game/` (TypeScript, Canvas 320×180,
+no game library). Pure logic in `quest.ts`, `dialogue.ts`, `puzzles.ts`, `storage.ts` (Vitest in `tests/`).
+Art redrawn by hand as pixel grids (`art.ts`, `tiles.ts`); reference sheets in `design/reference/` (not deployed).
+`public/game/` keeps 8 cleaned sprites used by the normal sections (header avatar, About, Contact, decorations).
+Commands: `npm run dev`, `npm run build`, `npm run preview`, `npm test`, `npm run check:content -- --verbose`.
 
-## Verification (actually run)
-- `npm run build`: astro check 0 errors / 0 warnings; 6 pages built.
-- Browser preview: `/`, `/projects/`, `/projects/project-2/` → 200; `/nope` → 404;
-  `/resume.pdf` → application/pdf; no horizontal overflow at 375px; 1 `h1` per page; 1 tiny inline script (scroll reveal).
-- Live site checked: all pages 200, unknown URL 404, resume.pdf served, canonical URL correct.
-- Not yet checked: Lighthouse score; screen-reader pass.
+## Verification (actually run, 2026-11-22)
+- `npm run build`: astro check 0 errors / 0 warnings. `npm test`: 37 passed (6 files).
+- Browser preview (desktop 1280 and 375 px): full quest played via keyboard events and clicks; every dialog
+  opens/closes; save persists across reload (Continue); reset clears it; no horizontal overflow at 375 px.
+- Local routes 200: `/`, `/projects/`, `/projects/bookapi/`, `/projects/notewave/`, `/resume.pdf`.
+  External: github.com/DaQ-Ng and /Bookapi 200; /notewave 404 (see above). LinkedIn not checked (blocks bots).
+- Not yet checked: real phone hardware, screen reader pass, Lighthouse.
 
 ## Decisions and pitfalls
 - `@rollup/pluginutils` pinned to 5.3.0 via `overrides` — 5.5.x broke `astro build` (estree-walker named export).
-- `@types/node` added so `astro check` accepts `process.env` in `astro.config.mjs`.
-- Contact is mailto (no backend) on purpose.
+- rAF timestamps can be earlier than `performance.now()` on the first frame: the engine clamps dt at 0.
+- Keys are captured only while the game screen has focus, so arrows/space still scroll the page otherwise.
+- Contact is mailto (no backend) on purpose. `?dx-debug` exposes `window.__dx` for manual testing.
 
 ## Next action
-1. Dat reviews/rewrites intro + About in `src/data/site.ts`.
-2. NoteWave: fix already exists on DaQ-Ng/notewave branch `fix/main-merge-markers` (commit 44c414b:
-   markers removed, duplicate CORS removed, basic-pitch import optional; main.py compiles). Needs merging
-   into `main` (and a PR to the team's upstream repo).
-4. Optional: add Dungeon Crawler and Arlington Organic Market project pages (from resume).
+1. Dat: play it, then commit and push to deploy.
+2. NoteWave repo: make it public (or give the right URL), then set `repo` in `portfolio.ts`.
+3. Add Dungeon Crawler links and a `src/content/projects/dungeon.md` case study (`page: 'dungeon'`).
+4. Rewrite intro + About in Dat's own voice; add real project screenshots to `DxProjectCard.astro`.

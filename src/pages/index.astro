@@ -1,10 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Hero from '../components/Hero.astro';
+import DatExe from '../components/DatExe.astro';
 import About from '../components/About.astro';
 import Skills from '../components/Skills.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import Contact from '../components/Contact.astro';
+import GameSprite from '../components/GameSprite.astro';
+import PixelArt from '../components/PixelArt.astro';
+import { tree, pine } from '../game/art';
+import PixelIcon from '../components/PixelIcon.astro';
+
 import { getProjects, getFeaturedProjects } from '../lib/projects';
 import { url } from '../lib/url';
 
@@ -13,43 +18,59 @@ const total = (await getProjects()).length;
 ---
 
 <BaseLayout>
-  <Hero />
-  <About />
-  <Skills />
+  <DatExe />
 
   <section id="projects" class="section container" aria-labelledby="projects-title">
-    <span class="section-label">Quest log</span>
-    <h2 id="projects-title">Featured projects</h2>
-
-    {/* Each card sits in a .reveal wrapper: the wrapper animates in on scroll,
-        the card keeps its own hover motion, so the two never fight. */}
-    {featured.length > 0 ? (
-      <div class="project-grid">
-        {featured.map((project, i) => (
-          <div class="reveal" style={`--i: ${i % 3}`}>
-            <ProjectCard project={project} />
-          </div>
-        ))}
+    <div class="panel">
+      <div class="deco deco-left" aria-hidden="true">
+        <PixelArt grid={pine} scale={4} />
+        <GameSprite name="bush-2" scale={2} />
       </div>
-    ) : (
-      <p class="muted">Projects coming soon.</p>
-    )}
+      <div class="deco deco-right" aria-hidden="true">
+        <PixelArt grid={tree} scale={4} />
+      </div>
 
-    {total > featured.length && (
-      <p class="all-link">
-        <a class="btn btn-secondary" href={url('projects/')}>See all {total} projects ▶</a>
-      </p>
-    )}
+      <div class="panel-body has-deco">
+        <div class="section-title">
+          <PixelIcon name="book" scale={4} />
+          <h2 id="projects-title">My Projects</h2>
+        </div>
+
+        {/* Each card sits in a .reveal wrapper: the wrapper animates in on scroll,
+            the card keeps its own hover motion, so the two never fight. */}
+        {featured.length > 0 ? (
+          <div class="project-grid">
+            {featured.map((project, i) => (
+              <div class="reveal" style={`--i: ${i % 3}`}>
+                <ProjectCard project={project} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p class="muted">Projects coming soon.</p>
+        )}
+
+        {total > featured.length && (
+          <p class="all-link">
+            <a class="btn btn-secondary" href={url('projects/')}>See all {total} projects ▶</a>
+          </p>
+        )}
+      </div>
+    </div>
   </section>
 
+  <About />
+  <Skills />
   <Contact />
 </BaseLayout>
 
 <style>
   .project-grid {
     display: grid;
-    gap: 1.75rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+    gap: 1.5rem;
+    /* Cards stay card-sized with only two or three projects, instead of stretching. */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    max-width: 60rem;
   }
-  .all-link { margin-top: 2.25rem; }
+  .all-link { margin: 2rem 0 0; }
 </style>

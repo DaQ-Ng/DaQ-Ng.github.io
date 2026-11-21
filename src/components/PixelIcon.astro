@@ -1,0 +1,15 @@
+---
+/** 8×8 pixel icon drawn in the current text colour. Decorative. */
+import PixelArt from './PixelArt.astro';
+import { icons, type IconName } from '../data/sprites';
+
+interface Props {
+  name: IconName;
+  /** Size of one icon pixel, in CSS px. */
+  scale?: number;
+  class?: string;
+}
+const { name, scale = 2, class: className } = Astro.props;
+---
+
+<PixelArt grid={[...icons[name]]} scale={scale} class={className} />

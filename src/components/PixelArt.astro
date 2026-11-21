@@ -1,0 +1,52 @@
+---
+/**
+ * Draws a pixel-art grid as crisp SVG rects.
+ * Each character in a row is one pixel; see `tones` in src/data/sprites.ts for the colour keys.
+ * "." is transparent. Rows shorter than the widest row are padded with transparency.
+ * Decorative only: hidden from screen readers.
+ */
+import { tones } from '../data/sprites';
+
+interface Props {
+  grid: string[];
+  /** Size of one pixel, in CSS px. */
+  scale?: number;
+  class?: string;
+  /** Override or extend the default colour keys. */
+  palette?: Record<string, string>;
+}
+
+const { grid, scale = 3, class: className, palette = {} } = Astro.props;
+const colors: Record<string, string> = { ...tones, ...palette };
+const width = Math.max(...grid.map((r) => r.length));
+const height = grid.length;
+
+// Merge horizontal runs of the same colour into one rect: far fewer DOM nodes.
+const rects: { x: number; y: number; w: number; fill: string }[] = [];
+grid.forEach((row, y) => {
+  let x = 0;
+  while (x < row.length) {
+    const ch = row[x];
+    let end = x + 1;
+    while (end < row.length && row[end] === ch) end++;
+    if (colors[ch]) rects.push({ x, y, w: end - x, fill: colors[ch] });
+    x = end;
+  }
+});
+---
+
+<svg
+  class:list={['pixel-art', className]}
+  viewBox={`0 0 ${width} ${height}`}
+  width={width * scale}
+  height={height * scale}
+  shape-rendering="crispEdges"
+  aria-hidden="true"
+  focusable="false"
+>
+  {rects.map((r) => <rect x={r.x} y={r.y} width={r.w} height="1" fill={r.fill} />)}
+</svg>
+
+<style>
+  .pixel-art { display: block; image-rendering: pixelated; flex: none; }
+</style>

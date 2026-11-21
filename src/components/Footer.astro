@@ -1,14 +1,23 @@
 ---
 import { site } from '../data/site';
 import Icon from './Icon.astro';
+import { url } from '../lib/url';
+
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer">
-  <div class="container inner">
-    <div>
-      <p class="thanks">Thanks for visiting!</p>
-      <p class="muted copy">© {year} {site.name} · Built with Astro</p>
+<footer class="site-footer container">
+  <div class="panel inner">
+    <div class="thanks-row">
+      <!-- Animated cat; visitors with reduced motion get the still first frame. -->
+      <picture class="cat" aria-hidden="true">
+        <source srcset={url('game/cat.png')} media="(prefers-reduced-motion: reduce)" />
+        <img src={url('game/cat.gif')} width="64" height="63" alt="" loading="lazy" decoding="async" />
+      </picture>
+      <div>
+        <p class="thanks">Thanks for visiting! ♥</p>
+        <p class="copy">© {year} {site.name} · Built with Astro</p>
+      </div>
     </div>
     <ul class="social" aria-label="Social links">
       <li>
@@ -31,29 +40,31 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-  .site-footer { border-top: 4px solid var(--frame); background: var(--bg); }
+  .site-footer { padding-bottom: 2rem; }
   .inner {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding-block: 1.75rem;
+    padding: 1rem 1.25rem;
   }
+  .thanks-row { display: flex; align-items: center; gap: 1rem; }
   p { margin: 0; }
-  .thanks { font-family: var(--font-pixel); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 0.5rem; }
-  .copy { font-family: var(--font-ui); font-size: 1.2rem; }
-  .social { display: flex; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
+  .thanks { font-size: 1.2rem; font-weight: 600; }
+  .copy { color: var(--text-muted); font-size: 1rem; }
+  .social { display: flex; gap: 0.6rem; list-style: none; margin: 0; padding: 0; }
   .social a {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    color: var(--text);
-    border: 3px solid var(--frame);
-    background: var(--surface);
-    box-shadow: 3px 3px 0 0 var(--hard-shadow);
+    width: 46px;
+    height: 46px;
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    border-radius: 4px;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--ink), 3px 3px 0 0 var(--ink);
     transition: translate 0.12s steps(2), box-shadow 0.12s steps(2);
   }
-  .social a:hover { color: var(--accent); translate: -2px -2px; box-shadow: 5px 5px 0 0 var(--hard-shadow); }
+  .social a:hover { translate: -2px -2px; box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--ink), 5px 5px 0 0 var(--ink); }
 </style>

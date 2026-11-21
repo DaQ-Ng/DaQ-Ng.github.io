@@ -7,7 +7,7 @@ import { join } from 'node:path';
 
 const strict = process.argv.includes('--strict');
 const verbose = process.argv.includes('--verbose');
-const files = ['src/data/site.ts'];
+const files = ['src/data/portfolio.ts'];
 const projectDir = 'src/content/projects';
 for (const f of readdirSync(projectDir)) {
   if (f.endsWith('.md') && !f.startsWith('_')) files.push(join(projectDir, f));

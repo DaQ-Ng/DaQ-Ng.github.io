@@ -2,46 +2,95 @@
 import { site } from '../data/site';
 import { url } from '../lib/url';
 import Icon from './Icon.astro';
+import PixelArt from './PixelArt.astro';
+import PixelIcon from './PixelIcon.astro';
+import GameSprite from './GameSprite.astro';
+import { mailbox, fence, cloud } from '../data/sprites';
+import { pine } from '../game/art';
 
 // A mailto link instead of a form: no backend, no spam handling, nothing to break.
 // README → "Adding a contact form" explains how to add one later if you want.
 ---
 
 <section id="contact" class="section container" aria-labelledby="contact-title">
-  <div class="panel pixel-box reveal">
-    <span class="section-label">Save point</span>
-    <h2 id="contact-title">Let's talk</h2>
-    <p class="message">{site.contact.message}</p>
-
-    <div class="btn-row">
-      <a class="btn btn-primary" href={`mailto:${site.contact.email}`}>
-        <Icon name="mail" /> Email me
-      </a>
-      <a class="btn btn-secondary" href={site.contact.linkedin} rel="noopener noreferrer" target="_blank">
-        <Icon name="linkedin" /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span>
-      </a>
-      <a class="btn btn-secondary" href={site.contact.github} rel="noopener noreferrer" target="_blank">
-        <Icon name="github" /> GitHub<span class="visually-hidden"> (opens in a new tab)</span>
-      </a>
-      <a class="btn btn-secondary" href={url(site.resume)} download>
-        <Icon name="download" /> Resume
-      </a>
+  <div class="panel scene">
+    <div class="backdrop" aria-hidden="true">
+      <div class="cloud drift"><PixelArt grid={cloud} scale={3} /></div>
+      <div class="ground"></div>
     </div>
 
-    <p class="email">
-      Or copy my address: <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
-    </p>
+    <div class="layout">
+      <div class="text reveal">
+        <div class="section-title">
+          <PixelIcon name="contact" scale={4} />
+          <h2 id="contact-title">Get in Touch</h2>
+        </div>
+        <p class="message">{site.contact.message}</p>
+
+        <div class="btn-row">
+          <a class="btn btn-primary" href={`mailto:${site.contact.email}`}>
+            <Icon name="mail" /> Email
+          </a>
+          <a class="btn btn-secondary" href={site.contact.github} rel="noopener noreferrer" target="_blank">
+            <Icon name="github" /> GitHub<span class="visually-hidden"> (opens in a new tab)</span>
+          </a>
+          <a class="btn btn-secondary" href={site.contact.linkedin} rel="noopener noreferrer" target="_blank">
+            <Icon name="linkedin" /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span>
+          </a>
+          <a class="btn btn-secondary" href={url(site.resume)} download>
+            <PixelIcon name="download" /> Resume
+          </a>
+        </div>
+
+        <p class="email">
+          Or copy my address: <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </p>
+      </div>
+
+      <div class="yard" aria-hidden="true">
+        <PixelArt grid={mailbox} scale={5} />
+        <PixelArt grid={fence} scale={4} class="fence" />
+        <PixelArt grid={pine} scale={4} class="pine" />
+      </div>
+    </div>
+
+    <div class="flowers" aria-hidden="true">
+      <GameSprite name="flower" />
+      <GameSprite name="flower" />
+    </div>
   </div>
 </section>
 
 <style>
-  .panel { padding: clamp(1.5rem, 5vw, 3rem); }
-  .message { max-width: 38rem; color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem; }
-  .email {
-    margin: 1.75rem 0 0;
-    font-family: var(--font-ui);
-    font-size: 1.3rem;
-    color: var(--text-muted);
-    overflow-wrap: anywhere;
+  .backdrop { position: absolute; inset: 0; pointer-events: none; }
+  .cloud { position: absolute; top: 1.25rem; right: 30%; }
+
+  .layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem) clamp(1.25rem, 4vw, 2.5rem) 0;
+  }
+  @media (min-width: 56rem) {
+    .layout { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+    .text { padding-bottom: 4rem; }
+  }
+
+  .message { max-width: 34rem; color: var(--text-muted); font-size: 1.15rem; margin-bottom: 1.75rem; }
+  .email { margin: 1.5rem 0 0; color: var(--text-muted); overflow-wrap: anywhere; }
+
+  .yard { display: flex; align-items: flex-end; justify-content: center; gap: 0.5rem; padding-bottom: 1.6rem; }
+  .yard :global(.fence) { margin-left: -0.5rem; }
+  .yard :global(.pine) { margin-left: -0.5rem; }
+
+  .flowers { position: absolute; z-index: 1; left: 1.5rem; bottom: 0.8rem; display: flex; gap: 2rem; }
+
+  @media (max-width: 55.99rem) {
+    .yard :global(.pine) { display: none; }
+  }
+  @media (max-width: 30rem) {
+    .yard :global(.fence) { display: none; }
   }
 </style>

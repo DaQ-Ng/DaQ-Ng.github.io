@@ -8,6 +8,7 @@ const projects = await getProjects();
 
 <BaseLayout title="Projects" description="All software engineering projects by Dat Nguyen.">
   <section class="section container" aria-labelledby="all-projects-title">
+    <div class="panel"><div class="panel-body">
     <div class="animate-in">
       <span class="section-label">Quest log</span>
       <h1 id="all-projects-title">All projects</h1>
@@ -19,6 +20,7 @@ const projects = await getProjects();
         </div>
       ))}
     </div>
+    </div></div>
   </section>
 </BaseLayout>
 
@@ -27,6 +29,6 @@ const projects = await getProjects();
   .project-grid {
     display: grid;
     gap: 1.75rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
   }
 </style>

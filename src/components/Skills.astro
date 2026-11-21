@@ -1,29 +1,51 @@
 ---
 import { site } from '../data/site';
+import GameSprite from './GameSprite.astro';
+import PixelArt from './PixelArt.astro';
+import { tree, pine } from '../game/art';
+import PixelIcon from './PixelIcon.astro';
+
 ---
 
 <section id="skills" class="section container" aria-labelledby="skills-title">
-  <span class="section-label">Inventory</span>
-  <h2 id="skills-title">Technical skills</h2>
+  <div class="panel">
+    <div class="deco deco-left" aria-hidden="true">
+      <PixelArt grid={pine} scale={4} />
+    </div>
+    <div class="deco deco-right" aria-hidden="true">
+      <GameSprite name="signpost" scale={2} />
+      <PixelArt grid={tree} scale={4} />
+    </div>
 
-  <div class="grid">
-    {site.skills.map((group, i) => (
-      <div class="group pixel-box reveal" style={`--i: ${i % 3}`}>
-        <h3>{group.category}</h3>
-        <ul class="tags">
-          {group.items.map((item) => <li class="tag">{item}</li>)}
-        </ul>
+    <div class="panel-body has-deco">
+      <div class="section-title">
+        <PixelIcon name="skills" scale={4} />
+        <h2 id="skills-title">Technical Skills</h2>
       </div>
-    ))}
+
+      <div class="grid">
+        {site.skills.map((group, i) => (
+          <div class="group ink-box reveal" style={`--i: ${i % 3}`}>
+            <h3>{group.category}</h3>
+            <ul>
+              {group.items.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
   .grid {
     display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
   }
-  .group { padding: 1.4rem 1.4rem 1.5rem; }
-  h3 { color: var(--accent); margin-bottom: 1rem; }
+  .group { padding: 1.1rem 1.25rem 1.25rem; }
+  h3 { font-size: 1.15rem; margin-bottom: 0.6rem; padding-bottom: 0.4rem; border-bottom: 2px dashed var(--tone-mid); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { font-size: 1.05rem; line-height: 1.5; }
+  li::before { content: '▸ ' / ''; color: var(--tone-light); }
 </style>
