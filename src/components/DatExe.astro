@@ -307,6 +307,10 @@ const github = !isMissing(site.contact.github);
 
   /* Touch pad: under the screen, shown on touch devices and small screens. */
   .dx-touch { display: none; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 0.4rem 0.2rem; }
+  /* iOS: holding a pad button must not select its glyph or open the Copy / Look Up / Translate bar. */
+  .dx-touch, .dx-touch *, .dx-frame canvas {
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
   .dx-js.dx-playing .dx-touch { display: none; }
   @media (pointer: coarse), (max-width: 48rem) {
     .dx-js.dx-playing .dx-touch { display: flex; }

@@ -419,6 +419,12 @@ export function mountDatExe(root: HTMLElement) {
     b.addEventListener('pointercancel', off);
     b.addEventListener('lostpointercapture', off);
   });
+  // iOS Safari ignores preventDefault on pointerdown for its long-press selection, so stop it at the touch level too.
+  const touchPad = $('.dx-touch');
+  touchPad.addEventListener('touchstart', (e) => {
+    if ((e.target as Element).closest('[data-dx-dir]')) e.preventDefault();
+  }, { passive: false });
+  touchPad.addEventListener('contextmenu', (e) => e.preventDefault());
   $<HTMLButtonElement>('[data-dx-a]').addEventListener('click', () => {
     if (booting) return;
     if (dialogue.open) nextLine();
