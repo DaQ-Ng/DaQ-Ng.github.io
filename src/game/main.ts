@@ -16,7 +16,7 @@ import {
   newDungeon, activateRoom, type Dungeon,
   newTuner, turnDial, tunerSolved, DIAL_STEPS, type TunerState,
 } from './puzzles';
-import { sfx, setMuted } from './audio';
+import { sfx, setMuted, music } from './audio';
 
 const NAMES = { robot: 'BYTE', system: 'SYSTEM', dat: 'DAT' } as const;
 const FRAGMENT_TITLES: Record<FragmentId, string> = { api: 'Book Marketplace API', dungeon: 'Dungeon Crawler', notes: 'NoteWave' };
@@ -67,7 +67,10 @@ export function mountDatExe(root: HTMLElement) {
   );
 
   const anyDialogOpen = () => !!document.querySelector('dialog.dx-dialog[open]');
-  const syncPause = () => engine.setPaused(booting || dialogue.open || anyDialogOpen());
+  const syncPause = () => {
+    engine.setPaused(booting || dialogue.open || anyDialogOpen());
+    music.duck(anyDialogOpen());
+  };
 
   /* ───────────── Settings UI ───────────── */
   function applySettings() {
@@ -452,6 +455,7 @@ export function mountDatExe(root: HTMLElement) {
   const bootTimers: number[] = [];
   function runBoot() {
     booting = true;
+    music.stop(false);
     boot.hidden = false;
     fit();
     root.classList.remove('dx-playing');
@@ -515,6 +519,7 @@ export function mountDatExe(root: HTMLElement) {
     root.classList.add('dx-playing');
     syncPause();
     engine.start();
+    music.start();
     screen.focus({ preventScroll: true });
     if (fresh || quest.fragments.length === 0) {
       say([
