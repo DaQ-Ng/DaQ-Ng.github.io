@@ -69,7 +69,8 @@ export function mountDatExe(root: HTMLElement) {
   const anyDialogOpen = () => !!document.querySelector('dialog.dx-dialog[open]');
   const syncPause = () => {
     engine.setPaused(booting || dialogue.open || anyDialogOpen());
-    music.duck(anyDialogOpen());
+    // Duck under windows, but let the victory fanfare play out loud.
+    music.duck(anyDialogOpen() && !dlg('dx-restored').open);
   };
 
   /* ───────────── Settings UI ───────────── */
@@ -257,7 +258,7 @@ export function mountDatExe(root: HTMLElement) {
     quest = restore(quest);
     save();
     renderHud();
-    sfx.restored();
+    music.start('victory', true);
     openDialog('dx-restored');
   }
 
@@ -519,7 +520,7 @@ export function mountDatExe(root: HTMLElement) {
     root.classList.add('dx-playing');
     syncPause();
     engine.start();
-    music.start();
+    music.start(quest.restored ? 'victory' : 'main');
     screen.focus({ preventScroll: true });
     if (fresh || quest.fragments.length === 0) {
       say([

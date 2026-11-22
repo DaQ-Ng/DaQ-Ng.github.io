@@ -4,15 +4,20 @@ let muted = false;
 
 export const setMuted = (m: boolean) => {
   muted = m;
-  if (m) music.stop();
-  else if (musicWanted) music.start();
+  if (m) {
+    music.stop();
+    silent?.pause();
+  } else {
+    playSilent();
+    if (musicWanted) music.start();
+  }
 };
 
 function ctx(): AudioContext | null {
   if (muted) return null;
   try {
     ac ??= new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    if (ac.state === 'suspended') void ac.resume();
+    if (ac.state !== 'running') void ac.resume().catch(() => {});
     return ac;
   } catch {
     return null;
@@ -46,23 +51,67 @@ export const sfx = {
 };
 
 /* ───────────── Background music ─────────────
-   An original 8-bar loop (Am–F–C–G), one 8th note per step, scheduled a little
-   ahead of time so it stays in rhythm even when the main thread is busy. */
-const BPM = 104;
-const STEP = 60 / BPM / 2;
-// prettier-ignore
-const LEAD = [
-  69, 0, 72, 0, 76, 74, 72, 0,   72, 0, 69, 0, 65, 67, 69, 0,
-  67, 0, 72, 0, 76, 0, 79, 77,   76, 0, 74, 0, 71, 0, 74, 0,
-  69, 72, 76, 72, 81, 0, 79, 76, 77, 0, 76, 0, 72, 0, 69, 0,
-  72, 76, 79, 76, 72, 0, 67, 0,  71, 0, 74, 0, 79, 0, 0, 0,
-];
-const ROOTS = [45, 41, 48, 43, 45, 41, 48, 43];
+   Original loops, one 8th note per step, scheduled a little ahead of time so
+   they stay in rhythm even when the main thread is busy. MIDI note numbers
+   (60 = middle C), 0 = rest. */
+type Part = { lead: number[]; bass: number[] };
+type Track = { bpm: number; vol: number; intro?: Part; loop: Part };
+
+/** Bass line from one root per bar: root, octave, root, octave… */
+const walk = (roots: number[]) => roots.flatMap((r) => [r, r + 12, r, r + 12, r, r + 12, r, r + 12]);
+
+const TRACKS = {
+  // Exploring: Am–F–C–G.
+  main: {
+    bpm: 104,
+    vol: 0.018,
+    loop: {
+      // prettier-ignore
+      lead: [
+        69, 0, 72, 0, 76, 74, 72, 0,   72, 0, 69, 0, 65, 67, 69, 0,
+        67, 0, 72, 0, 76, 0, 79, 77,   76, 0, 74, 0, 71, 0, 74, 0,
+        69, 72, 76, 72, 81, 0, 79, 76, 77, 0, 76, 0, 72, 0, 69, 0,
+        72, 76, 79, 76, 72, 0, 67, 0,  71, 0, 74, 0, 79, 0, 0, 0,
+      ],
+      bass: walk([45, 41, 48, 43, 45, 41, 48, 43]),
+    },
+  },
+  // Save restored: a fanfare once, then a bright C–Am–F–G loop.
+  victory: {
+    bpm: 120,
+    vol: 0.02,
+    intro: {
+      // prettier-ignore
+      lead: [
+        67, 67, 67, 72, 0, 0, 72, 74,  76, 0, 74, 76, 79, 0, 0, 0,
+      ],
+      // prettier-ignore
+      bass: [
+        48, 0, 48, 0, 48, 0, 0, 0,     43, 55, 43, 55, 48, 60, 48, 0,
+      ],
+    },
+    loop: {
+      // prettier-ignore
+      lead: [
+        72, 0, 76, 79, 84, 0, 79, 76,  76, 0, 72, 76, 81, 0, 79, 0,
+        77, 0, 81, 84, 81, 0, 77, 0,   79, 0, 74, 77, 79, 0, 83, 0,
+        84, 0, 83, 84, 79, 0, 76, 79,  81, 0, 79, 81, 76, 0, 72, 0,
+        77, 81, 84, 81, 77, 0, 74, 0,  79, 0, 83, 0, 86, 0, 84, 0,
+      ],
+      bass: walk([48, 45, 41, 43, 48, 45, 41, 43]),
+    },
+  },
+} satisfies Record<string, Track>;
+export type TrackName = keyof typeof TRACKS;
+
 const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
 
 let musicWanted = false;
 let musicGain: GainNode | null = null;
 let timer = 0;
+let track: Track = TRACKS.main;
+let trackName: TrackName = 'main';
+let part: Part = track.loop;
 let step = 0;
 let nextAt = 0;
 let ducked = false;
@@ -73,22 +122,43 @@ const DUCKED = 0.25;
 function schedule() {
   const a = ctx();
   if (!a || !musicGain) return;
+  const len = 60 / track.bpm / 2;
+  // After a long stall (e.g. a frozen tab), skip ahead instead of bursting notes.
+  if (nextAt < a.currentTime - 0.2) nextAt = a.currentTime + 0.05;
   while (nextAt < a.currentTime + 0.15) {
-    const n = LEAD[step];
-    if (n) tone(hz(n), 0, STEP * 0.9, 0.018, 'square', musicGain, nextAt);
-    const root = ROOTS[Math.floor(step / 8)];
-    tone(hz(step % 2 ? root + 12 : root), 0, STEP * 0.8, 0.05, 'triangle', musicGain, nextAt);
-    nextAt += STEP;
-    step = (step + 1) % LEAD.length;
+    const n = part.lead[step];
+    if (n) tone(hz(n), 0, len * 0.9, track.vol, 'square', musicGain, nextAt);
+    const b = part.bass[step];
+    if (b) tone(hz(b), 0, len * 0.8, 0.05, 'triangle', musicGain, nextAt);
+    nextAt += len;
+    step++;
+    if (step >= part.lead.length) {
+      step = 0;
+      part = track.loop;
+    }
   }
 }
 
 export const music = {
-  /** Start (or resume) the loop. Must first be called from a user gesture. */
-  start() {
+  /**
+   * Start (or resume) music. With a track name it switches to that track from
+   * the top (playing its intro if `intro` is true); without one it carries on.
+   */
+  start(name?: TrackName, intro = false) {
     musicWanted = true;
+    const switching = !!name && (name !== trackName || intro);
+    if (switching) {
+      trackName = name;
+      track = TRACKS[name];
+      part = intro && track.intro ? track.intro : track.loop;
+      step = 0;
+    }
     const a = ctx();
-    if (!a || timer) return;
+    if (!a) return;
+    if (timer) {
+      if (switching) nextAt = a.currentTime + 0.05;
+      return;
+    }
     musicGain = a.createGain();
     musicGain.gain.value = ducked ? DUCKED : LEVEL;
     musicGain.connect(a.destination);
@@ -96,7 +166,7 @@ export const music = {
     schedule();
     timer = window.setInterval(schedule, 50);
   },
-  /** Stop the loop. `keepWanted` lets it come back on unmute / tab return. */
+  /** Stop the music. `keepWanted` lets it come back on unmute / tab return. */
   stop(keepWanted = true) {
     if (!keepWanted) musicWanted = false;
     clearInterval(timer);
@@ -110,15 +180,89 @@ export const music = {
   },
   /** Quieter while a window (puzzle, index…) is open. */
   duck(on: boolean) {
+    if (on === ducked) return;
     ducked = on;
     if (musicGain && ac) musicGain.gain.setTargetAtTime(on ? DUCKED : LEVEL, ac.currentTime, 0.15);
   },
 };
 
-// Don't keep playing in a background tab.
-if (typeof document !== 'undefined') {
+/* ───────────── Phones ─────────────
+   iOS only lets a page start audio inside a tap, and by default treats Web
+   Audio like a ringtone, so the silent switch mutes it. On the first taps we
+   resume the context, play a blank buffer, and ask for "playback" audio (with
+   a silent looping <audio> as a fallback for older iOS) so sound comes through
+   the way it does for video. */
+let silent: HTMLAudioElement | null = null;
+const isIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+
+function silentWav(): string {
+  const n = 800; // 0.1 s of 8 kHz, 8-bit mono silence
+  const b = new Uint8Array(44 + n);
+  const v = new DataView(b.buffer);
+  const str = (o: number, t: string) => [...t].forEach((c, i) => (b[o + i] = c.charCodeAt(0)));
+  str(0, 'RIFF');
+  v.setUint32(4, 36 + n, true);
+  str(8, 'WAVEfmt ');
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true);
+  v.setUint32(28, 8000, true);
+  v.setUint16(32, 1, true);
+  v.setUint16(34, 8, true);
+  str(36, 'data');
+  v.setUint32(40, n, true);
+  b.fill(128, 44);
+  return URL.createObjectURL(new Blob([b], { type: 'audio/wav' }));
+}
+
+const playSilent = () => {
+  if (silent && !muted && !document.hidden) void silent.play().catch(() => {});
+};
+
+const GESTURES = ['pointerup', 'touchend', 'click', 'keydown'] as const;
+function unlock() {
+  if (muted) return;
+  const nav = navigator as Navigator & { audioSession?: { type: string } };
+  if (nav.audioSession) {
+    try {
+      nav.audioSession.type = 'playback';
+    } catch {
+      /* not supported */
+    }
+  } else if (isIOS() && !silent) {
+    try {
+      silent = new Audio(silentWav());
+      silent.loop = true;
+      silent.setAttribute('playsinline', '');
+      playSilent();
+    } catch {
+      /* ignore */
+    }
+  }
+  const a = ctx();
+  if (!a) return;
+  try {
+    const src = a.createBufferSource();
+    src.buffer = a.createBuffer(1, 1, 22050);
+    src.connect(a.destination);
+    src.start(0);
+  } catch {
+    /* ignore */
+  }
+  if (a.state === 'running') GESTURES.forEach((e) => window.removeEventListener(e, unlock, true));
+}
+
+if (typeof window !== 'undefined') {
+  GESTURES.forEach((e) => window.addEventListener(e, unlock, true));
+  // Don't keep playing in a background tab.
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) music.stop();
-    else if (musicWanted && !muted) music.start();
+    if (document.hidden) {
+      music.stop();
+      silent?.pause();
+    } else if (!muted) {
+      playSilent();
+      if (musicWanted) music.start();
+    }
   });
 }
