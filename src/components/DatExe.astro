@@ -156,7 +156,7 @@ const github = !isMissing(site.contact.github);
       {linkedIn && <a class="btn btn-secondary" href={site.contact.linkedin} target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a>}
       <a class="btn btn-secondary" href={url(site.resume)} download><Icon name="download" /> Resume</a>
     </div>
-    <p class="dx-addr">{site.contact.email}</p>
+    <p class="dx-addr addr">{site.contact.email}</p>
   </dialog>
 
   <dialog class="dx-dialog dx-restored" id="dx-restored" aria-labelledby="dx-restored-t">
@@ -203,7 +203,7 @@ const github = !isMissing(site.contact.github);
     <section id="dxi-contact" aria-labelledby="dxi-contact-t">
       <h3 id="dxi-contact-t">Contact</h3>
       <div class="btn-row">
-        <a class="btn btn-primary btn-sm" href={`mailto:${site.contact.email}`}><Icon name="mail" size={16} /> {site.contact.email}</a>
+        <a class="btn btn-primary btn-sm" href={`mailto:${site.contact.email}`}><Icon name="mail" size={16} /> <span class="addr">{site.contact.email}</span></a>
         {github && <a class="btn btn-secondary btn-sm" href={site.contact.github} target="_blank" rel="noopener noreferrer"><Icon name="github" size={16} /> GitHub<span class="visually-hidden"> (opens in a new tab)</span></a>}
         {linkedIn && <a class="btn btn-secondary btn-sm" href={site.contact.linkedin} target="_blank" rel="noopener noreferrer"><Icon name="linkedin" size={16} /> LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a>}
         <a class="btn btn-secondary btn-sm" href={url(site.resume)} download><Icon name="download" size={16} /> Resume (PDF)</a>

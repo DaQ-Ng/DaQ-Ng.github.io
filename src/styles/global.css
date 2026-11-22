@@ -95,6 +95,9 @@ a:hover { text-decoration-style: dashed; }
   outline-offset: 4px;
 }
 
+/* Written-out addresses: the pixel font's 5 reads as S, so use a font where every character is unambiguous. */
+.addr { font-family: var(--font-mono); font-size: 0.95em; letter-spacing: 0; }
+
 code {
   font-family: var(--font-mono);
   font-size: 0.9em;
